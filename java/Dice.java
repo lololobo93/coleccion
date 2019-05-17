@@ -22,6 +22,14 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+/**
+ * Construye un JFrame que simula el lanzamiento de dos dados, muestra la
+ * hora, además de registrar los lanzamientos en una tabla y una gráfica.
+
+ * @author: Jesús Ernesto Carro Martínez
+ * @version: 17/05/2019
+ */
+
 public class Dice extends JApplet{
 /** Para colocar los JPanel en Applet.*/
     public Dice() {

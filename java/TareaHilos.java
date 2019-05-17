@@ -10,7 +10,7 @@ import javax.swing.*;
  * Construye un frame que contiene la hora actual, un cronómetro start-stop y una cuenta 
  * regresiva introducida por el usuario en minutos.
 
- * @author: Montserrat González García
+ * @author: Jesús Ernesto Carro Martínez
  * @version: 13/05/2019
  */
 

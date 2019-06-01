@@ -23,7 +23,7 @@ namespace ConsoleApplication1
                  {
                      /** Opciones del menu */
                      case 1: 
-                         int Id = Read_Console_Int("id");
+                         int Id = ReadId() + 1;
                          String Nombre = Read_Console_Str("nombre");
                          String Direccion = Read_Console_Str("dirección");
                          String Curp = Read_Console_Str("curp");
@@ -48,7 +48,9 @@ namespace ConsoleApplication1
              while(opcion!=4);
              mensaje("El programa ha finalizado.");            
          }
-
+         
+         /* Lee la consola para obtener lo solicitado en label,
+         un String en este caso. */
          static String Read_Console_Str(String label){
              Console.Write("\n> Ingrese " + label + " : ");
              try {
@@ -65,6 +67,8 @@ namespace ConsoleApplication1
                  }
          }
 
+         /* Lee la consola para obtener lo solicitado en label, un entero 
+         en este caso. */
          static int Read_Console_Int(String label){
              Console.Write("\n> Ingrese " + label + " : ");
              try {
@@ -81,14 +85,111 @@ namespace ConsoleApplication1
                  }
          }
          
+         /* Lee la base de datos para imprimir los datos del paciente con
+         nombre Nombre */
          static void Read(String Nombre)
          {
              try
              {
                  SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-                 builder.DataSource = "localhost";   // update me
-                 builder.UserID = "SA";              // update me
-                 builder.Password = "Mercenario93";      // update me
+                 builder.DataSource = "localhost";   
+                 builder.UserID = "SA";              
+                 builder.Password = "TuPassword";      
+                 builder.InitialCatalog = "master";
+                 using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+                 {
+                     conn.Open();
+                     String sql = "USE HosJuarezDB; SELECT * FROM Pacientes";
+                     Boolean isNoFound = true;
+                     using (SqlCommand cmd = new SqlCommand(sql, conn))
+                     {
+                         SqlDataReader reader = cmd.ExecuteReader();
+
+                         if (reader.HasRows)
+                         {
+                             while (reader.Read())
+                             {
+                                 if (reader["Nombre"].ToString() == Nombre)
+                                 {
+                                     //  Console.WriteLine("Id = ", reader["Id"]);
+                                     Console.WriteLine("\nNombre: " + reader["Nombre"].ToString());
+                                     Console.WriteLine("Curp: " + reader["Curp"].ToString());
+                                     Console.WriteLine("Dirección: " + reader["Direccion"].ToString());
+                                     Console.WriteLine("Edad: " + reader["Edad"].ToString());
+                                     Console.WriteLine("Habitacio: " + reader["Habitacion"].ToString());
+                                     isNoFound = false;
+                                     mensaje("Datos del paciente solicitado");
+                                 }
+                             }
+                         }
+                         if (isNoFound)
+                         {
+                             mensaje("No se encontró paciente con nombre " + Nombre);
+                         }
+                         reader.Close();
+                     }
+                 }
+             }
+             catch (SqlException ex)
+             {
+                Console.WriteLine(ex.ToString());
+                //Log exception
+                //Display Error message
+             }
+         }
+
+         /* Busca el último Id de la base de datos para ingresar las siguientes
+         entradas después de esta. */
+         static int ReadId()
+         {
+             try
+             {
+                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                 builder.DataSource = "localhost";   
+                 builder.UserID = "SA";              
+                 builder.Password = "TuPassword";      
+                 builder.InitialCatalog = "master";
+                 using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+                 {
+                     conn.Open();
+                     String sql = "USE HosJuarezDB; SELECT * FROM Pacientes";
+                     using (SqlCommand cmd = new SqlCommand(sql, conn))
+                     {
+                         SqlDataReader reader = cmd.ExecuteReader();
+                         int id_count = 0;
+                         if (reader.HasRows)
+                         {
+                             while (reader.Read())
+                             {
+                                 if (Convert.ToInt32(reader["Id"]) > id_count)
+                                 {
+                                     id_count = Convert.ToInt32(reader["Id"]);
+                                 }
+                             }
+                         }
+                         reader.Close();
+                         return id_count;
+                     }
+                 }
+             }
+             catch (SqlException ex)
+             {
+                 Console.WriteLine(ex.ToString());
+                 return 0;
+                //Log exception
+                //Display Error message
+             }
+         }
+
+         /* Determina si existe paciente con nombre Nombre. */
+         static bool FindPaciente(String Nombre)
+         {
+             try
+             {
+                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                 builder.DataSource = "localhost";   
+                 builder.UserID = "SA";              
+                 builder.Password = "TuPassword";      
                  builder.InitialCatalog = "master";
                  using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
                  {
@@ -104,72 +205,76 @@ namespace ConsoleApplication1
                              {
                                  if (reader["Nombre"].ToString() == Nombre)
                                  {
-                                     //  Console.WriteLine("Id = ", reader["Id"]);
-                                     Console.WriteLine("Nombre = " + reader["Nombre"].ToString());
-                                     Console.WriteLine("Curp = " + reader["Curp"].ToString());
-                                     Console.WriteLine("Direccion = " + reader["Direccion"].ToString());
-                                     Console.WriteLine("Edad = " + reader["Edad"].ToString());
-                                     Console.WriteLine("Habitacion = " + reader["Habitacion"].ToString());
+                                     return true;
                                  }
                              }
                          }
-                         mensaje("Paciente del hospital");
                          reader.Close();
+                         return false;
                      }
                  }
              }
              catch (SqlException ex)
              {
                 Console.WriteLine(ex.ToString());
+                return false;
                 //Log exception
                 //Display Error message
              }
          }
 
+         /* Ingresa un nuevo paciente a la base de datos. */
          static void Insert(int Id, String Nombre, String Curp, String Direccion, int Edad, int Habitacion)
          {
-             try
+             if (FindPaciente(Nombre))
              {
-                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-                 builder.DataSource = "localhost";   // update me
-                 builder.UserID = "SA";              // update me
-                 builder.Password = "Mercenario93";      // update me
-                 builder.InitialCatalog = "master";
-                 using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
-                 {
-                     conn.Open();
-                     String sql = "USE HosJuarezDB; INSERT INTO Pacientes VALUES(" +
-                             "@Id, @Nombre, @Curp, @Direccion, @Edad, @Habitacion)";
-                     using (SqlCommand cmd = new SqlCommand(sql, conn))
-                     {
-                         cmd.Parameters.AddWithValue("@Id", Id);
-                         cmd.Parameters.AddWithValue("@Nombre", Nombre);
-                         cmd.Parameters.AddWithValue("@Curp", Curp);
-                         cmd.Parameters.AddWithValue("@Direccion", Direccion);
-                         cmd.Parameters.AddWithValue("@Edad", Edad);
-                         cmd.Parameters.AddWithValue("@Habitacion", Habitacion);
-
-                         int rows = cmd.ExecuteNonQuery();
-
-                         //rows number of record got inserted
-                     }
-                     mensaje("Se ingreso nuevo paciente");
-                 }
+                 mensaje("Ya existe registro de paciente con nombre " + Nombre);
              }
-             catch (SqlException ex)
-             {
-                 Console.WriteLine(ex.ToString());
+             else {
+                 try
+                 {
+                     SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                     builder.DataSource = "localhost";   
+                     builder.UserID = "SA";              
+                     builder.Password = "TuPassword";      
+                     builder.InitialCatalog = "master";
+                     using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+                     {
+                         conn.Open();
+                         String sql = "USE HosJuarezDB; INSERT INTO Pacientes VALUES(" +
+                                 "@Id, @Nombre, @Curp, @Direccion, @Edad, @Habitacion)";
+                         using (SqlCommand cmd = new SqlCommand(sql, conn))
+                         {
+                             cmd.Parameters.AddWithValue("@Id", Id);
+                             cmd.Parameters.AddWithValue("@Nombre", Nombre);
+                             cmd.Parameters.AddWithValue("@Curp", Curp);
+                             cmd.Parameters.AddWithValue("@Direccion", Direccion);
+                             cmd.Parameters.AddWithValue("@Edad", Edad);
+                             cmd.Parameters.AddWithValue("@Habitacion", Habitacion);
+
+                             int rows = cmd.ExecuteNonQuery();
+
+                             //rows number of record got inserted
+                         }
+                         mensaje("Se ingreso nuevo paciente");
+                     }
+                 }
+                 catch (SqlException ex)
+                 {
+                     Console.WriteLine(ex.ToString());
+                 }   
              }
          }
 
+         /* Elimina paciente Nombre de la base de datos. */
          static void Delete(String Nombre)
          {
              try
              {
                  SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-                 builder.DataSource = "localhost";   // update me
-                 builder.UserID = "SA";              // update me
-                 builder.Password = "Mercenario93";      // update me
+                 builder.DataSource = "localhost";   
+                 builder.UserID = "SA";              
+                 builder.Password = "TuPassword";      
                  builder.InitialCatalog = "master";
                  using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
                  {
@@ -196,7 +301,7 @@ namespace ConsoleApplication1
          static int menu()
          {
              //Console.Clear();
-             Console.WriteLine("\n Hospital Juárez. \n");
+             Console.WriteLine("\n Hospital Juárez.");
              Console.WriteLine("\n Registro de pacientes. \n");
              Console.WriteLine(" 1.- Añadir paciente");
              Console.WriteLine(" 2.- Consultar paciente");

@@ -8,6 +8,9 @@ import javax.swing.table.*;
 import java.text.*;
 import javax.imageio.ImageIO;
 import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -26,7 +29,7 @@ import org.jfree.data.xy.XYSeriesCollection;
  * México desde 2005 hasta 2018 y hace un estimado lineal de los posibles 
  * resultados para 2019, 2020, 2021 y 2022.
 
- * @author: Monserrat
+ * @author: Jesús Ernesto Carro Martínez
  * @version: 31/05/2019
  */
 
@@ -76,6 +79,13 @@ class ProyectoFinalPanel extends JPanel implements ActionListener, Runnable {
     /** Construye los tres paneles para el JFrame */
     ProyectoFinalPanel(){
     panel = new DataFileTable("PEA.csv", "Poblacion.csv"); // Se leen los archivos
+    
+    // Descomentar las siguientes cuatro lineas si se desea usar base de datos.
+    // readCsv("PEA.csv");
+    // readCsvUsingLoad("PEA.csv");
+
+    // readCsv(""Poblacion.csv"");
+    // readCsvUsingLoad(""Poblacion.csv"");
 
     model1 = new ConvertTableModel("PEA.csv");
     table1 = new JTable();

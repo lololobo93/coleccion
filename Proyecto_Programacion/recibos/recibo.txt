@@ -1,0 +1,5 @@
+Datos del comprador:
+Tienda: NuevaMega RFC: CSMJ1241231a
+Compra:
+Unidades | Codigo | Producto | Fabricante | Costo
+4 | 12345 | Switch | Nintendo | 4
